@@ -1,0 +1,3 @@
+module "graphdb" {
+    source = "./graphdb"
+}
