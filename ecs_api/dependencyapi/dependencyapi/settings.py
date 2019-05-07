@@ -121,4 +121,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-NEPTUNE_DATABASE = 'wss://tf-20190506211453566900000002.c7lcmmyq4ty8.eu-west-1.neptune.amazonaws.com:8182/gremlin'
+NEPTUNE_DATABASE = os.environ.get('DATABASE_CONNECTION_STRING', '')
