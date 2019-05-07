@@ -27,3 +27,7 @@ resource "aws_neptune_subnet_group" "default" {
         "${element(data.aws_subnet_ids.default.ids, 1)}"
     ]
 }
+
+output "database_endpoint" {
+    value = "${aws_neptune_cluster_instance.default.endpoint}"
+}
