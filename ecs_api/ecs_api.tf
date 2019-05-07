@@ -52,7 +52,42 @@ EOF
 
 # Cloudwatch resources
 resource "aws_cloudwatch_log_group" "api_logs" {
-    name = "/ecs/dependency_api"
+    name = "/ecs/dependencyapi"
+}
+
+# Load Balancer resources
+resource "aws_lb" "default" {
+    name = "snyk-challenge-api"
+    internal = false
+    load_balancer_type = "application"
+    subnets = [
+        "${element(data.aws_subnet_ids.default.ids, 0)}",
+        "${element(data.aws_subnet_ids.default.ids, 1)}"
+    ]
+}
+
+resource "aws_lb_target_group" "default" {
+    name = "snyk-challenge-api-tg"
+    port = 8000
+    protocol = "HTTP"
+    vpc_id = "${data.aws_vpc.default.id}"
+    target_type = "ip"
+
+    health_check {
+        enabled = true
+        path = "/admin/login/"
+    }
+}
+
+resource "aws_lb_listener" "default" {
+    load_balancer_arn = "${aws_lb.default.arn}"
+    port = "80"
+    protocol = "HTTP"
+    
+    default_action {
+        type = "forward"
+        target_group_arn = "${aws_lb_target_group.default.arn}"
+    }
 }
 
 # ECS Resources
@@ -68,7 +103,7 @@ resource "template_file" "api_task_def" {
 }
 
 resource "aws_ecs_task_definition" "default" {
-    family = "default"
+    family = "api"
     container_definitions = "${template_file.api_task_def.rendered}"
     network_mode = "awsvpc"
     requires_compatibilities = ["FARGATE"]
@@ -87,5 +122,11 @@ resource "aws_ecs_service" "default" {
     network_configuration {
         subnets = ["${element(data.aws_subnet_ids.default.ids, 0)}"]
         assign_public_ip = true
+    }
+
+    load_balancer {
+        target_group_arn = "${aws_lb_target_group.default.arn}"
+        container_name = "dependencyapi"
+        container_port = 8000
     }
 }

@@ -11,6 +11,13 @@
         "value": "${database_connection_string}"
       }
     ],
+    "portMappings": [
+      {
+        "containerPort": 8000,
+        "hostPort": 8000,
+        "protocol": "tcp"
+      }
+    ],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": { 
