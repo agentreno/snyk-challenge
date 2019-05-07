@@ -1,3 +1,8 @@
-from django.shortcuts import render
+from api.models import Package
+from api.serializers import PackageSerializer
+from rest_framework import generics
 
-# Create your views here.
+
+class PackageList(generics.ListCreateAPIView):
+    queryset = Package.objects.all()
+    serializer_class = PackageSerializer
