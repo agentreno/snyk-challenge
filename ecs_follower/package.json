@@ -1,0 +1,18 @@
+{
+  "name": "npm-follower",
+  "version": "1.0.0",
+  "description": "",
+  "main": "follower.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node follower.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "changes-stream": "^2.2.0",
+    "gremlin": "^3.4.1",
+    "normalize-registry-metadata": "^1.1.2",
+    "request": "^2.88.0"
+  }
+}
