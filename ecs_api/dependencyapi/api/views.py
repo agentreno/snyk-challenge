@@ -22,7 +22,7 @@ class BaseRetrieveView(generics.RetrieveAPIView):
             ".path().by('name')"
         )
         dependency_paths = [[package for package in path] for path in output]
-        return Package(name="mypackage", dependency_tree=str(dependency_paths))
+        return Package(name=package, dependency_tree=str(dependency_paths))
 
 
 class PackageDetail(BaseRetrieveView):
