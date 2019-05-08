@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.451.0",
     "changes-stream": "^2.2.0",
     "gremlin": "^3.4.1",
     "normalize-registry-metadata": "^1.1.2",

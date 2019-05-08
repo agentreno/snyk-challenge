@@ -40,7 +40,47 @@ resource "aws_iam_role_policy" "follower_logs_access" {
   "Statement": [
     {
       "Action": [
-        "logs:**"
+        "logs:*"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role" "follower_task_role" {
+    name = "npm_follower_task_role"
+    assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "follower_task_logs_access" {
+    name = "npm_follower_task_logs_access"
+    role = "${aws_iam_role.follower_task_role.id}"
+
+    policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "logs:*",
+        "cloudwatch:PutMetricData"
       ],
       "Effect": "Allow",
       "Resource": "*"
@@ -73,6 +113,7 @@ resource "aws_ecs_task_definition" "default" {
     network_mode = "awsvpc"
     requires_compatibilities = ["FARGATE"]
     execution_role_arn = "${aws_iam_role.follower_execution_role.arn}"
+    task_role_arn = "${aws_iam_role.follower_task_role.arn}"
     cpu = 256
     memory = 512
 }

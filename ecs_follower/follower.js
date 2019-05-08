@@ -3,6 +3,7 @@ const unfold = gremlin.process.statics.unfold
 const addV = gremlin.process.statics.addV
 const ChangesStream = require('changes-stream')
 const Normalize = require('normalize-registry-metadata')
+const AWS = require('aws-sdk')
 
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection
 const Graph = gremlin.structure.Graph
@@ -11,13 +12,30 @@ const db = 'https://replicate.npmjs.com'
 var dc = new DriverRemoteConnection(process.env.DATABASE_CONNECTION_STRING);
 const g = new Graph().traversal().withRemote(dc)
 
+var cloudwatch = new AWS.CloudWatch()
+
 var changes = new ChangesStream({
    db: db,
    include_docs: true,
 })
 
 changes.on('data', async function(change) {
-  console.log('Sequence: ' + change.seq + '\n')
+  // Publish current sequence number for monitoring
+  var params = {
+    MetricData: [
+      {
+        MetricName: 'CURRENT_REGISTRY_SEQUENCE_NUMBER',
+        Value: change.seq,
+        Timestamp: new Date,
+        StorageResolution: 1
+      }
+    ],
+    Namespace: 'CUSTOM'
+  }
+  cloudwatch.putMetricData(params, (err, data) => {
+    if (err) console.log(err)
+  })
+
   if (change.doc.name) {
     metadata = Normalize(change.doc)
 
