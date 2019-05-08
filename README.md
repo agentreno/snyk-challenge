@@ -1,3 +1,7 @@
+## High level design
+
+![High level design](hld.png)
+
 ## TODO before production
 
 - It needs resilience and scalability tuning (ECS and Neptune horizontal and
