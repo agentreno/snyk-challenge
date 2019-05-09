@@ -45,9 +45,12 @@ class App extends Component {
 
     return (
       <div className="App">
-        <div id="treeWrapper" style={{width: '50em', height: '20em'}}>
-          <Tree data={treeData} />
-          <input value={this.state.package} onChange={this.handlePackageChange} />
+        <div id="treeWrapper">
+          <Tree data={treeData} translate={{x: 50, y: 400}} />
+          <div id="packageInput">
+            <p>Insert the name of a package here:</p>
+            <input value={this.state.package} onChange={this.handlePackageChange} />
+          </div>
         </div>
       </div>
     );
