@@ -17,7 +17,7 @@ resource "aws_neptune_cluster" "default" {
 resource "aws_neptune_cluster_instance" "default" {
     count = 1
     cluster_identifier = "${aws_neptune_cluster.default.id}"
-    instance_class = "db.r4.large"
+    instance_class = "db.r5.xlarge"
 }
 
 resource "aws_neptune_subnet_group" "default" {

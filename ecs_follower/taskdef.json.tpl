@@ -2,8 +2,8 @@
   {
     "name": "npm_follower",
     "image": "karlhopkinsonturrell/npm_follower",
-    "cpu": 256,
-    "memory": 512,
+    "cpu": 1024,
+    "memory": 2048,
     "essential": true,
     "environment": [
       {
