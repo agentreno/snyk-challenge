@@ -114,7 +114,7 @@ async function processChange(change, done) {
     if (!version || !version_metadata || !('dependencies' in version_metadata)) {
         return
     }
-    insertDependencies(g, package_name, package_vertex_id,  version, version_metadata)
+    insertDependencies(package_name, package_vertex_id,  version, version_metadata)
   })
 
   done()
@@ -125,7 +125,7 @@ var changesConfig = {
   include_docs: true,
   sequence: 'seq.txt',
   since: 0,
-  concurrency: 3,
-  highWaterMark: 4
+  concurrency: 1,
+  highWaterMark: 1
 }
 changes(processChange, changesConfig)
