@@ -14,15 +14,18 @@ class BaseRetrieveView(generics.RetrieveAPIView):
         # submit()
         # A blacklist will have to do but this would need solving prior to prod!
         package = self.kwargs.get('package', '').replace("'", "")
+        version = self.kwargs.get('version', '').replace("'", "")
 
         neptune_client = client.Client(settings.NEPTUNE_DATABASE, 'g')
-        output = neptune_client.submit(
-            "g.V().has('package', 'name', '" + package + "')" +
-            ".until(__.not(outE())).repeat(out())" +
-            ".path().by('name')"
+        query = (
+            f"g.V().has('version', 'fqname', '{package}@{version}')"
+            ".until(__.not(out('depends').simplePath())).repeat(out('depends').simplePath())"
+            ".tree().by('fqname')"
         )
-        dependency_paths = [[package for package in path] for path in output]
-        return Package(name=package, dependency_tree=str(dependency_paths))
+        print(query)
+        output = neptune_client.submit(query)
+        result = output.all().result()
+        return Package(name=package, dependency_tree=str(result))
 
 
 class PackageDetail(BaseRetrieveView):
