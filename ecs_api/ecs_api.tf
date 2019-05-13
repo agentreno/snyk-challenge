@@ -130,3 +130,7 @@ resource "aws_ecs_service" "default" {
         container_port = 8000
     }
 }
+
+output "elb_dns" {
+    value = "${aws_lb.default.dns_name}"
+}
