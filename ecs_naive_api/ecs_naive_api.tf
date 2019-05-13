@@ -75,7 +75,7 @@ resource "aws_lb_target_group" "default" {
 
     health_check {
         enabled = true
-        path = "/admin/login/"
+        path = "/health"
     }
 }
 
