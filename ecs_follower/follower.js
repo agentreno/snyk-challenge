@@ -2,11 +2,14 @@ const gremlin = require('gremlin')
 const unfold = gremlin.process.statics.unfold
 const addV = gremlin.process.statics.addV
 const changes = require('concurrent-couch-follower')
+const axios = require('axios')
+const semver = require('semver')
 const Normalize = require('normalize-registry-metadata')
 const AWS = require('aws-sdk')
 
 const DriverRemoteConnection = gremlin.driver.DriverRemoteConnection
 const Graph = gremlin.structure.Graph
+const registry = 'https://registry.npmjs.com'
 const db = 'https://replicate.npmjs.com'
 
 var dc = new DriverRemoteConnection(process.env.DATABASE_CONNECTION_STRING);
@@ -33,18 +36,32 @@ function reportSeq(change) {
   })
 }
 
+function getAllPackageVersions(package_name) {
+  return new Promise(async function(resolve, reject) {
+    try {
+      const response = await axios.get(registry + '/' + package_name)
+      resolve(Object.keys(response.data.versions))
+    } catch(err) {
+      reject(err)
+    }
+  })
+}
+
 async function insertDependencies(package_name, package_vertex_id, version, version_metadata) {
-  // Add version to the package version list
-  g.V().has('package', 'name', package_name).property('versions', version).next()
-    .catch(err => { console.log('Error adding package version:\n' + err) })
-    //.then(value => { console.log('Added package version:\n' + JSON.stringify(value)) })
+  // Add version vertex if it doesn't exist
+  fully_qualified_name = package_name + '@' + version
+  version_vertex_resp = await g.V().has('version', 'fqname', fully_qualified_name)
+    .fold().coalesce(unfold(), addV('version').property('fqname', fully_qualified_name)).next()
+    .catch(err => { console.log('Error adding version vertex:\n' + err) })
+  //console.log('Added package vertex:\n' + JSON.stringify(package_vertex_resp))
+  var {value: {id: version_vertex_id}} = version_vertex_resp
 
   // Loop over dependencies for this version
   if (typeof version_metadata.dependencies === 'object') {
     Object.entries(version_metadata.dependencies).forEach(async function([dependency_name, version_constraint]) {
       // Add dependency package vertex if it doesn't exist
-      dependency_vertex_resp = await g.V().has('package', 'name', dependency_name)
-        .fold().coalesce(unfold(), addV('package').property('name', dependency_name)).next()
+      dependency_vertex_resp = await g.V().has('package', 'fqname', dependency_name)
+        .fold().coalesce(unfold(), addV('package').property('fqname', dependency_name)).next()
         .catch(err => { console.log('Error adding dependency vertex:\n' + err) })
 
       //console.log('Added dependency vertex:\n' + JSON.stringify(dependency_vertex_resp))
@@ -56,11 +73,29 @@ async function insertDependencies(package_name, package_vertex_id, version, vers
       }
       var {value: {id: dependency_vertex_id}} = dependency_vertex_resp
 
-      // Add depends edge from package to dependency with constraint as property
-      g.V(package_vertex_id)
-        .addE('depends').to(g.V(dependency_vertex_id))
-        .property('from_version', version)
-        .property('to_version', version_constraint)
+      // Find max satisfying version of the dependency for this constraint
+      dependency_versions = await getAllPackageVersions(dependency_name)
+      max_satisfying_dependency_version = semver.maxSatisfying(dependency_versions, version_constraint)
+
+      // Add dependency version vertex if it doesn't exist
+      fully_qualified_dependency_name = dependency_name + '@' + max_satisfying_dependency_version
+      dependency_version_vertex_resp = await g.V().has('version', 'fqname', fully_qualified_dependency_name)
+        .fold().coalesce(unfold(), addV('version').property('fqname', fully_qualified_dependency_name)).next()
+        .catch(err => { console.log('Error adding dependency version vertex:\n' + err) })
+
+      //console.log('Added dependency vertex:\n' + JSON.stringify(dependency_vertex_resp))
+      if (!dependency_version_vertex_resp ||
+          !('value' in dependency_version_vertex_resp) ||
+          !('id' in dependency_version_vertex_resp.value)) {
+        console.log('Received invalid vertex add response')
+        return
+      }
+      var {value: {id: dependency_version_vertex_id}} = dependency_version_vertex_resp
+
+      // Add depends edge from package version to dependency version vertices
+      g.V(version_vertex_id)
+        .addE('depends').to(g.V(dependency_version_vertex_id))
+        .property('constraint', version_constraint)
         .next()
         .catch(err => { console.log('Error adding dependency edge:\n' + err) })
         //.then(value => { console.log('Added dependency edge:\n' + JSON.stringify(value)) })
@@ -103,8 +138,8 @@ async function processChange(change, done) {
   }
 
   // Add package vertex if it doesn't exist
-  package_vertex_resp = await g.V().has('package', 'name', package_name)
-    .fold().coalesce(unfold(), addV('package').property('name', package_name)).next()
+  package_vertex_resp = await g.V().has('package', 'fqname', package_name)
+    .fold().coalesce(unfold(), addV('package').property('fqname', package_name)).next()
     .catch(err => { console.log('Error adding package vertex:\n' + err) })
   //console.log('Added package vertex:\n' + JSON.stringify(package_vertex_resp))
   var {value: {id: package_vertex_id}} = package_vertex_resp
@@ -114,7 +149,7 @@ async function processChange(change, done) {
     if (!version || !version_metadata || !('dependencies' in version_metadata)) {
         return
     }
-    insertDependencies(package_name, package_vertex_id,  version, version_metadata)
+    insertDependencies(package_name, package_vertex_id, version, version_metadata)
   })
 
   done()
