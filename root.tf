@@ -13,5 +13,5 @@ module "ecs_api" {
 }
 
 output "api_url" {
-    value = "http://${module.ecs_api.elb_dns}/api/package/<package name>"
+    value = "http://${module.ecs_api.elb_dns}/api/package/<package name>/<version>/"
 }
