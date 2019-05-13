@@ -1,4 +1,5 @@
 const express = require('express')
+const cors = require('cors')
 const redis = require('redis')
 const {promisify} = require('util')
 const ls = require('npm-remote-ls').ls
@@ -8,6 +9,8 @@ const port = 8000
 client = redis.createClient({ 'host': process.env.CACHE_CONNECTION_STRING })
 const getAsync = promisify(client.get).bind(client)
 const setEx = promisify(client.set).bind(client)
+
+app.use(cors())
 
 app.get('/health', (req, res) => {
     res.send('OK')
