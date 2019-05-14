@@ -1,6 +1,65 @@
-## High level design
+# snyk-challenge
+
+## Description
+
+An API and client for displaying npm package dependencies, as defined by the
+Snyk interview challenge.
+
+This repository contains:
+
+- `cache` - terraform to create a Redis Elasticache instance to cache API
+  responses
+- `ecs_naive_api` - a Node Express API which queries the registry and serves a
+  dependency tree for a given package, as well as terraform ECS and ELB
+  resources to host the API
+- `client` - a React app to visualise the dependency tree
+
+It is also worth noting that an initial approach to this challenge was aborted.
+This involved using a graph database to represent dependency graphs, and a
+persistent npm follower to receive all registry changes and avoid polling
+behaviour, as well as a Python Django DRF API to front the graph DB.
+
+The approach was aborted due to rising AWS costs and lack of time, but the
+implementation worked correctly when limited to following the npm registry for
+a small set of packages (rather than modelling all packages and dependencies
+throughout the public registry).
+
+These modules are:
+
+- `graphdb`
+- `ecs_api`
+- `ecs_follower`
+
+## Installing
+
+To run terraform and create infrastructure:
+
+- `echo 'profile = "<AWS profile to use from credentials file>"' > terraform.tfvars`
+- `terraform init`
+- `terraform apply`
+- See terraform output for API URL
+
+Alternatively:
+
+To run the API locally without a cache:
+
+- `cd ecs_naive_api`
+- `docker build -t ecs_naive_api .`
+- `docker run -it -p 8000:8000 ecs_naive_api`
+
+To run the React client app locally:
+
+- `cd client`
+- `npm install`
+- `npm start`
+
+## Current Design
 
 ![High level design](hld.png)
+
+## Initial Design
+
+![High level design](hld-initial.png)
 
 ## TODO before production
 
