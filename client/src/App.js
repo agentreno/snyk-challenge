@@ -1,33 +1,10 @@
 import React, { Component } from 'react';
 import Tree from 'react-d3-tree';
+import {debounce} from 'lodash'
 import axios from 'axios';
 import './App.css';
 
 const base_api = 'http://snyk-challenge-naive-api-714444549.eu-west-1.elb.amazonaws.com'
-
-var myTreeData = [
-  {
-    name: 'Top Level',
-    attributes: {
-      keyA: 'val A',
-      keyB: 'val B',
-      keyC: 'val C',
-    },
-    children: [
-      {
-        name: 'Level 2: A',
-        attributes: {
-          keyA: 'val A',
-          keyB: 'val B',
-          keyC: 'val C',
-        },
-      },
-      {
-        name: 'Level 2: B',
-      },
-    ],
-  },
-];
 
 function convertRespToGraph(data) {
     if (Object.keys(data).length === 0) return
@@ -39,13 +16,18 @@ class App extends Component {
     super(props)
     this.state = { package: '', treeData: [{}] }
     this.handlePackageChange = this.handlePackageChange.bind(this)
+    this.fetchPackageDependencies = debounce(this.fetchPackageDependencies, 100)
+  }
+
+  fetchPackageDependencies(packageName) {
+    axios.get(base_api + '/package/' + packageName + '/latest/').then(resp => {
+      this.setState({ treeData: convertRespToGraph(resp.data) })
+    }).catch(err => { console.log(err) })
   }
 
   handlePackageChange(e) {
     this.setState({ package: e.target.value })
-    axios.get(base_api + '/package/' + e.target.value + '/latest/').then(resp => {
-      this.setState({ treeData: convertRespToGraph(resp.data) })
-    }).catch(err => { console.log(err) })
+    this.fetchPackageDependencies(e.target.value)
   }
 
   render() {
