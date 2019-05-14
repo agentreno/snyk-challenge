@@ -1,5 +1,11 @@
 # snyk-challenge
 
+## Demo
+
+Temporarily available at:
+
+http://s3-eu-west-1.amazonaws.com/agentreno-misc/snyk-challenge/index.html
+
 ## Description
 
 An API and client for displaying npm package dependencies, as defined by the
