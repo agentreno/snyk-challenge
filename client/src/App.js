@@ -14,20 +14,29 @@ function convertRespToGraph(data) {
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = { package: '', treeData: [{}] }
+    this.state = { package: '', version: '', treeData: [{}] }
     this.handlePackageChange = this.handlePackageChange.bind(this)
-    this.fetchPackageDependencies = debounce(this.fetchPackageDependencies, 100)
+    this.handleVersionChange = this.handleVersionChange.bind(this)
+    this.fetchPackageDependencies = debounce(this.fetchPackageDependencies, 250)
   }
 
-  fetchPackageDependencies(packageName) {
-    axios.get(base_api + '/package/' + packageName + '/latest/').then(resp => {
-      this.setState({ treeData: convertRespToGraph(resp.data) })
+  fetchPackageDependencies(packageName, versionName) {
+    versionName = versionName || 'latest'
+    axios.get(`${base_api}/package/${packageName}/${versionName}/`).then(resp => {
+      let data = convertRespToGraph(resp.data)
+      if (Object.keys(data).length === 0) data = [{}]
+      this.setState({ treeData: data })
     }).catch(err => { console.log(err) })
   }
 
   handlePackageChange(e) {
     this.setState({ package: e.target.value })
-    this.fetchPackageDependencies(e.target.value)
+    this.fetchPackageDependencies(e.target.value, this.state.version)
+  }
+
+  handleVersionChange(e) {
+    this.setState({ version: e.target.value })
+    this.fetchPackageDependencies(this.state.package, e.target.value)
   }
 
   render() {
@@ -38,6 +47,8 @@ class App extends Component {
           <div id="packageInput">
             <p>Insert the name of a package here:</p>
             <input value={this.state.package} onChange={this.handlePackageChange} />
+            <p>Insert the version of a package here:</p>
+            <input value={this.state.version} onChange={this.handleVersionChange} />
           </div>
         </div>
       </div>
