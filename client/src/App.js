@@ -3,7 +3,7 @@ import Tree from 'react-d3-tree';
 import axios from 'axios';
 import './App.css';
 
-const base_api = 'http://snyk-challenge-naive-api-1433142573.eu-west-1.elb.amazonaws.com'
+const base_api = 'http://snyk-challenge-naive-api-714444549.eu-west-1.elb.amazonaws.com'
 
 var myTreeData = [
   {
@@ -29,6 +29,11 @@ var myTreeData = [
   },
 ];
 
+function convertRespToGraph(data) {
+    if (Object.keys(data).length === 0) return
+    return Object.entries(data).map(([k, v]) => ({'name': k, 'children': convertRespToGraph(v)}))
+}
+
 class App extends Component {
   constructor(props) {
     super(props)
@@ -39,7 +44,7 @@ class App extends Component {
   handlePackageChange(e) {
     this.setState({ package: e.target.value })
     axios.get(base_api + '/package/' + e.target.value + '/latest/').then(resp => {
-      this.setState({ treeData: [resp.data] })
+      this.setState({ treeData: convertRespToGraph(resp.data) })
     }).catch(err => { console.log(err) })
   }
 
