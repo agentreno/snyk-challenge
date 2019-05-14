@@ -48,6 +48,55 @@ code {
 }
 
 #treeWrapper {
-  height: 800px;
-  width: 800px;
+  height: 70%;
+  width: 1600px;
+  border: 2px solid black;
+}
+
+#treeWrapper circle {
+  fill: #66E0C8;
+}
+
+#treeWrapper .leafNodeBase circle {
+  fill: #726e97;
+}
+
+#treeWrapper text {
+  stroke-width: 0.3;
+  stroke: #673C4F;
+  fill: #673C4F;
+  font-size: 12px;
+}
+
+#treeWrapper path {
+  opacity: 0.2 !important;
+}
+
+#loader {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform: translateY(20%) translateX(50%);
+  z-index: -1;
+}
+
+#packageInput {
+  margin-top: 20px;
+}
+
+#packageInput input {
+  text-align: center;
+  width: 100px;
+  height: 20px;
+  font-weight: bold;
+} 
+
+#packageInput fieldset {
+  margin: 0 auto;
+  width: 300px;
+  font-weight: bold;
+}
+
+#treeWrapper .loading {
+  display: none;
 }
