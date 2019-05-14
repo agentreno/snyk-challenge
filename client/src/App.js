@@ -14,7 +14,7 @@ function convertRespToGraph(data) {
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = { package: '', version: '', treeData: [{}] }
+    this.state = { package: 'react', version: 'latest', treeData: [{}] }
     this.handlePackageChange = this.handlePackageChange.bind(this)
     this.handleVersionChange = this.handleVersionChange.bind(this)
     this.fetchPackageDependencies = debounce(this.fetchPackageDependencies, 250)
@@ -37,6 +37,10 @@ class App extends Component {
   handleVersionChange(e) {
     this.setState({ version: e.target.value })
     this.fetchPackageDependencies(this.state.package, e.target.value)
+  }
+
+  componentDidMount() {
+    this.fetchPackageDependencies(this.state.package, this.state.version)
   }
 
   render() {
