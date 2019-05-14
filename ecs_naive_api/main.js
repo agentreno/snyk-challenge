@@ -6,7 +6,11 @@ const ls = require('npm-remote-ls').ls
 const app = express()
 const port = 8000
 
-client = redis.createClient({ 'host': process.env.CACHE_CONNECTION_STRING })
+client = redis.createClient({
+  'host': process.env.CACHE_CONNECTION_STRING,
+  'connect_timeout': 500
+})
+client.on('error', err => console.log(err))
 const getAsync = promisify(client.get).bind(client)
 const setEx = promisify(client.set).bind(client)
 
