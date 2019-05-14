@@ -57,6 +57,8 @@ To run the React client app locally:
 - `npm install`
 - `npm start`
 
+API endpoint is currently hardcoded in `client/src/App.js`.
+
 ## Current Design
 
 ![High level design](hld.png)
