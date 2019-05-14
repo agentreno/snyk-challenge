@@ -2,6 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
+  "homepage": "http://s3-eu-west-1.amazonaws.com/agentreno-misc/snyk-challenge",
   "dependencies": {
     "axios": "^0.18.0",
     "cors": "^2.8.5",

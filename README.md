@@ -17,7 +17,10 @@ This repository contains:
 It is also worth noting that an initial approach to this challenge was aborted.
 This involved using a graph database to represent dependency graphs, and a
 persistent npm follower to receive all registry changes and avoid polling
-behaviour, as well as a Python Django DRF API to front the graph DB.
+behaviour, as well as a Python Django DRF API to front the graph DB. While it
+is quick and easy to implement recursive polling behaviour (hence 'naive' API),
+it is not good engineering to make multiple onward requests while the API
+client is waiting for a response.
 
 The approach was aborted due to rising AWS costs and lack of time, but the
 implementation worked correctly when limited to following the npm registry for
@@ -41,7 +44,8 @@ To run terraform and create infrastructure:
 
 Alternatively:
 
-To run the API locally without a cache:
+To run the API locally without a cache (ignore cache connection refusal, the
+client uses a retry backoff strategy, the API functions):
 
 - `cd ecs_naive_api`
 - `docker build -t ecs_naive_api .`
